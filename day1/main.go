@@ -79,13 +79,17 @@ func fetchNumberFromString(input string) int {
 
 	var first, last int
 
-	if len(charSlice) != 0 && charSlice[0] < intSlice[0] {
+	if len(intSlice) == 0 && len(charSlice) == 0 {
+		return 0
+	}
+
+	if (len(intSlice) == 0) || (len(charSlice) != 0 && charSlice[0] < intSlice[0]) {
 		first = charMap[charSlice[0]]
 	} else {
 		first = int(input[intSlice[0]]) - 48
 	}
 
-	if len(charSlice) != 0 && charSlice[len(charSlice)-1] > intSlice[len(intSlice)-1] {
+	if (len(intSlice) == 0) || (len(charSlice) != 0 && charSlice[len(charSlice)-1] > intSlice[len(intSlice)-1]) {
 		last = charMap[charSlice[len(charSlice)-1]]
 	} else {
 		last = int(input[intSlice[len(intSlice)-1]]) - 48
