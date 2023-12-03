@@ -212,12 +212,19 @@ func getSlowEngineNumbers(input []string) int64 {
 						// ---123-456----
 						// ------*-------
 
+						// there is one more case here, a version of case 1.
+						// the number consisits of just a single digit and lies in the middle of the allowed indices,
+						// this case will not be caught in any of the above cases.
+						// 4. -------(-)----- ie a single digit num just above the '*'.
+						//    ------|-*-|------
+
 						// case 1
 						if (localNum.start <= start && localNum.end >= end) ||
 							// case 2
 							(localNum.start <= start && localNum.end <= end && localNum.end >= start) ||
 							// case 3
-							(localNum.start >= start && localNum.start <= end && localNum.end >= end) {
+							(localNum.start >= start && localNum.start <= end && localNum.end >= end) ||
+							(localNum.start >= start && localNum.end <= end) {
 							count++
 
 							if mul == 0 {
@@ -236,7 +243,7 @@ func getSlowEngineNumbers(input []string) int64 {
 
 					// same logic as above applied here, this time for lines below '*'
 					for _, localNum := range numsInInput[i+1] {
-						if (localNum.start <= start && localNum.end >= end) || (localNum.start <= start && localNum.end <= end && localNum.end >= start) || (localNum.start >= start && localNum.start <= end && localNum.end >= end) {
+						if (localNum.start <= start && localNum.end >= end) || (localNum.start <= start && localNum.end <= end && localNum.end >= start) || (localNum.start >= start && localNum.start <= end && localNum.end >= end) || (localNum.start >= start && localNum.end <= end) {
 							count++
 							if mul == 0 {
 								mul = localNum.num
