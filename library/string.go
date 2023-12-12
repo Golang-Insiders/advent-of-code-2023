@@ -14,7 +14,7 @@ func FetchSliceOfIntsInString(line string) []int {
 			build.WriteRune(char)
 		}
 
-		if char == ' ' && build.Len() != 0 {
+		if (char == ' ' || char == ',') && build.Len() != 0 {
 			localNum, err := strconv.ParseInt(build.String(), 10, 64)
 			if err != nil {
 				panic(err)
