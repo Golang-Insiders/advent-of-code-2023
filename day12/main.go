@@ -21,20 +21,18 @@ func main() {
 func ans(input []string, times int) int {
 	sum := 0
 	cache := map[string]int{}
-	count := 0
 	for _, line := range input {
-		count, cache = processLine(line, cache, times)
-		sum += count
+		sum += processLine(line, cache, times)
 	}
 	return sum
 }
 
-func processLine(input string, cache map[string]int, times int) (int, map[string]int) {
+func processLine(input string, cache map[string]int, times int) int {
 	stringRep, numRep := fetchInputs(input, times)
 	return getCount(stringRep, numRep, cache)
 }
 
-func fetchInputs(input string, times int) ([]string, []int) {
+func fetchInputs(input string, times int) (string, []int) {
 	stringRep := input[:strings.Index(input, " ")]
 	numRep := aoc.FetchSliceOfIntsInString(input[strings.Index(input, " "):])
 
@@ -48,7 +46,7 @@ func fetchInputs(input string, times int) ([]string, []int) {
 		numRep2 = append(numRep2, numRep...)
 	}
 	stringRep = build.String()
-	return strings.Split(stringRep, ""), numRep2
+	return stringRep, numRep2
 }
 
 // top level approach used:
@@ -58,56 +56,51 @@ func fetchInputs(input string, times int) ([]string, []int) {
 //   - '?' -> 2 recursive call by replacing once with '.' and then '#'.
 //
 // - to reduce the number of recursive calls, we also have a cache to store all evaluated results.
-func getCount(line []string, group []int, cache map[string]int) (int, map[string]int) {
+func getCount(line string, group []int, cache map[string]int) int {
 
 	// first, try cache hit ie, check if the current case is already present in cache
 	// if yes, return early
-	cacheEntry := strings.Join([]string{strings.Join(line, ""), aoc.ConvertIntSliceToString(group, ",")}, "")
+	cacheEntry := line + aoc.ConvertIntSliceToString(group, ",")
 	if v, ok := cache[cacheEntry]; ok {
-		return v, cache
+		return v
 	}
 
 	// check if all groups have been evaluated and input string has no '#' left
 	// if yes, this is a valid combination, count can be increased by 1
-	if len(group) == 0 && !strings.Contains(strings.Join(line, ""), "#") {
+	if len(group) == 0 && !strings.Contains(line, "#") {
 		cache[cacheEntry] = 1
-		return 1, cache
+		return 1
 		// we can fail early in all the below conditions:
 		// 		- input string has '#' left but no groups left
 		// 		- input string is exhausted
 		// 		- input string length is less than number of groups to satisfy
 	} else if (len(group) == 0) || (len(line) == 0) || (len(line) < len(group)) {
 		cache[cacheEntry] = 0
-		return 0, cache
+		return 0
 	}
 
 	var count int
 	// if first character of input string is a '?': try both cases -
 	// 		- replace with '.'
 	// 		- replace with '#'
-	if line[0] == "?" {
-		c := 0
-		c, cache = getCount(append([]string{"#"}, line[1:]...), group, cache)
-		count += c
-		c, cache = getCount(append([]string{"."}, line[1:]...), group, cache)
-		count += c
+	if line[0] == '?' {
+		count += getCount("#"+line[1:], group, cache)
+		count += getCount("."+line[1:], group, cache)
 	}
 
 	// if first character of input string is a '.', we can safely ignore it and proceed
-	if line[0] == "." {
-		c := 0
-		c, cache = getCount(line[1:], group, cache)
-		count += c
+	if line[0] == '.' {
+		count += getCount(line[1:], group, cache)
 	}
 
 	// if first charcter of input string is a '#', then check if we can satisfy the first group
-	if line[0] == "#" {
+	if line[0] == '#' {
 
 		// count number of consecutive '#' till the first non '#' character
 		// check if this count satisfies the first group
 		c := 0
 		for _, char := range line {
-			if char == "#" {
+			if char == '#' {
 				c++
 			} else {
 				break
@@ -119,15 +112,11 @@ func getCount(line []string, group []int, cache map[string]int) (int, map[string
 		// (Note: we don't just register a success here because there might bemore groups to match
 		// that the input string does not satisfy)
 		if c == group[0] && (len(line) == c) {
-			cs := 0
-			cs, cache = getCount([]string{}, group[1:], cache)
-			count += cs
+			count += getCount("", group[1:], cache)
 			// if '#' count satisfies the first group:
 			// invoke the func with the rest of the input string and remaining groups left to evaluate
 		} else if c == group[0] {
-			cs := 0
-			cs, cache = getCount(line[c+1:], group[1:], cache)
-			count += cs
+			count += getCount(line[c+1:], group[1:], cache)
 		}
 
 		// if '#' count does not satify the first group and:
@@ -135,24 +124,21 @@ func getCount(line []string, group []int, cache map[string]int) (int, map[string
 		// 		- count of `#` is greater than first group: since order of groups is important, we can fail early
 		if c != group[0] && (c == len(line) || c > group[0]) {
 			cache[cacheEntry] = 0
-			return 0, cache
+			return 0
 		}
 
 		// if '#' count is less than first group and the `#`s are followed by a `.`: fail
-		if c < group[0] && line[c] == "." {
-			return 0, cache
+		if c < group[0] && line[c] == '.' {
+			return 0
 		}
 
 		// if '#' count is less than first ground and the `#`s are followed by a `?`:
 		// replace '?' with '#' and invoke the func again
-		if c < group[0] && line[c] == "?" {
-			line[c] = "#"
-			cs := 0
-			cs, cache = getCount(line, group, cache)
-			count += cs
+		if c < group[0] && line[c] == '?' {
+			count += getCount(line[:c]+"#"+line[c+1:], group, cache)
 		}
 
 	}
 	cache[cacheEntry] = count
-	return count, cache
+	return count
 }
