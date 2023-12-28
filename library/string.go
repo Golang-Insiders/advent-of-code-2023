@@ -9,16 +9,29 @@ import (
 func FetchSliceOfIntsInString(line string) []int {
 	nums := []int{}
 	var build strings.Builder
+	isNegative := false
+
 	for _, char := range line {
 		if unicode.IsDigit(char) {
 			build.WriteRune(char)
 		}
 
 		if (char == ' ' || char == ',') && build.Len() != 0 {
+		if char == '-' {
+			isNegative = true
+		}
+
+		if char == ' ' && build.Len() != 0 {
 			localNum, err := strconv.ParseInt(build.String(), 10, 64)
 			if err != nil {
 				panic(err)
 			}
+			if isNegative {
+				localNum *= -1
+			}
+			nums = append(nums, int(localNum))
+			build.Reset()
+			isNegative = false
 			nums = append(nums, int(localNum))
 			build.Reset()
 		}
@@ -28,11 +41,16 @@ func FetchSliceOfIntsInString(line string) []int {
 		if err != nil {
 			panic(err)
 		}
+		if isNegative {
+			localNum *= -1
+		}
+
 		nums = append(nums, int(localNum))
 		build.Reset()
 	}
 	return nums
 }
+
 
 func FetchNumFromStringIgnoringNonNumeric(line string) int {
 	var build strings.Builder
