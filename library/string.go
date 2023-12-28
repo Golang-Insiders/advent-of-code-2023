@@ -16,6 +16,7 @@ func FetchSliceOfIntsInString(line string) []int {
 			build.WriteRune(char)
 		}
 
+		if (char == ' ' || char == ',') && build.Len() != 0 {
 		if char == '-' {
 			isNegative = true
 		}
